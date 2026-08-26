@@ -1,0 +1,532 @@
+{
+  "image_path": "demo_output\\synthetic_field.png",
+  "image_width": 1200,
+  "image_height": 900,
+  "overall_green_pct": 26.94,
+  "total_area_m2": 30000.0,
+  "vegetated_area_m2": 8081.58,
+  "deficit_area_m2": 14418.42,
+  "grid_rows": 8,
+  "grid_cols": 8,
+  "status_breakdown": {
+    "healthy": 10,
+    "moderate": 8,
+    "needs_attention": 12,
+    "bare": 34
+  },
+  "cells": [
+    {
+      "row": 0,
+      "col": 0,
+      "green_fraction": 0.3802,
+      "status": "needs_attention",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "green_fraction": 0.978,
+      "status": "healthy",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "green_fraction": 0.232,
+      "status": "needs_attention",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "green_fraction": 0.0065,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "green_fraction": 0.0048,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "green_fraction": 0.0057,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 0,
+      "col": 6,
+      "green_fraction": 0.0057,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 0,
+      "col": 7,
+      "green_fraction": 0.0055,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "green_fraction": 0.3199,
+      "status": "needs_attention",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "green_fraction": 0.9843,
+      "status": "healthy",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "green_fraction": 0.7763,
+      "status": "healthy",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "green_fraction": 0.15,
+      "status": "needs_attention",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "green_fraction": 0.0053,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "green_fraction": 0.0041,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 1,
+      "col": 6,
+      "green_fraction": 0.0056,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 1,
+      "col": 7,
+      "green_fraction": 0.0061,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "green_fraction": 0.2173,
+      "status": "needs_attention",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "green_fraction": 0.4973,
+      "status": "moderate",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "green_fraction": 0.9989,
+      "status": "healthy",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "green_fraction": 0.9803,
+      "status": "healthy",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "green_fraction": 0.2072,
+      "status": "needs_attention",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "green_fraction": 0.0064,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "green_fraction": 0.2533,
+      "status": "needs_attention",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 2,
+      "col": 7,
+      "green_fraction": 0.7473,
+      "status": "healthy",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "green_fraction": 0.0312,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "green_fraction": 0.1266,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "green_fraction": 0.9294,
+      "status": "healthy",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "green_fraction": 0.7109,
+      "status": "healthy",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "green_fraction": 0.6458,
+      "status": "moderate",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "green_fraction": 0.0684,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "green_fraction": 0.1337,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 3,
+      "col": 7,
+      "green_fraction": 0.4684,
+      "status": "moderate",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "green_fraction": 0.0062,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "green_fraction": 0.0192,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "green_fraction": 0.4485,
+      "status": "moderate",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "green_fraction": 0.9729,
+      "status": "healthy",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "green_fraction": 0.2408,
+      "status": "needs_attention",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "green_fraction": 0.061,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "green_fraction": 0.0043,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 4,
+      "col": 7,
+      "green_fraction": 0.0049,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 5,
+      "col": 0,
+      "green_fraction": 0.0212,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 5,
+      "col": 1,
+      "green_fraction": 0.0194,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "green_fraction": 0.0371,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "green_fraction": 0.6937,
+      "status": "moderate",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "green_fraction": 0.031,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "green_fraction": 0.0985,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 5,
+      "col": 6,
+      "green_fraction": 0.0148,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 5,
+      "col": 7,
+      "green_fraction": 0.0047,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 6,
+      "col": 0,
+      "green_fraction": 0.5279,
+      "status": "moderate",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "green_fraction": 0.4638,
+      "status": "moderate",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "green_fraction": 0.007,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 6,
+      "col": 3,
+      "green_fraction": 0.0059,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "green_fraction": 0.1967,
+      "status": "needs_attention",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 6,
+      "col": 5,
+      "green_fraction": 0.9776,
+      "status": "healthy",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 6,
+      "col": 6,
+      "green_fraction": 0.4086,
+      "status": "moderate",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 6,
+      "col": 7,
+      "green_fraction": 0.0081,
+      "status": "bare",
+      "pixel_area": 16800,
+      "real_area_m2": 466.67
+    },
+    {
+      "row": 7,
+      "col": 0,
+      "green_fraction": 0.2625,
+      "status": "needs_attention",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "green_fraction": 0.2307,
+      "status": "needs_attention",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 7,
+      "col": 2,
+      "green_fraction": 0.0066,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 7,
+      "col": 3,
+      "green_fraction": 0.0055,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 7,
+      "col": 4,
+      "green_fraction": 0.0369,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 7,
+      "col": 5,
+      "green_fraction": 0.3808,
+      "status": "needs_attention",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 7,
+      "col": 6,
+      "green_fraction": 0.134,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    },
+    {
+      "row": 7,
+      "col": 7,
+      "green_fraction": 0.029,
+      "status": "bare",
+      "pixel_area": 16950,
+      "real_area_m2": 470.83
+    }
+  ],
+  "recommendation": "Current coverage is 26.9%, which is 48.1 percentage points below the 75% target. 46/64 grid zones (72%) are classified 'needs_attention' or 'bare' and should be prioritized. Estimated additional vegetated area needed: ~14,418 m\u00b2."
+}

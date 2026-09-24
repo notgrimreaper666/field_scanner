@@ -1,15 +1,5 @@
-"""
-analyzer.py
-
-FieldAnalyzer: loads a field image, computes overall green coverage %,
-and runs a grid-based analysis to identify *which zones* of the field
-are under-vegetated and how much area/effort would be needed to fix them.
-"""
-
-from __future__ import annotations
 import json
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
+from dataclasses import asdict, dataclass
 
 import numpy as np
 from PIL import Image
@@ -21,9 +11,9 @@ from .vegetation_index import green_mask
 class CellResult:
     row: int
     col: int
-    green_fraction: float          # 0.0 - 1.0
-    status: str                    # "healthy" | "moderate" | "needs_attention" | "bare"
-    pixel_area: int                # pixel count of the cell
+    green_fraction: float
+    status: str  # healthy | moderate | needs_attention | bare
+    pixel_area: int
     real_area_m2: float | None = None
 
 
@@ -38,24 +28,18 @@ class FieldReport:
     deficit_area_m2: float | None
     grid_rows: int
     grid_cols: int
-    status_breakdown: dict          # e.g. {"healthy": 12, "moderate": 5, ...}
-    cells: list[CellResult] = field(default_factory=list)
+    status_breakdown: dict
+    cells: list[CellResult]
     recommendation: str = ""
 
     def to_dict(self):
-        d = asdict(self)
-        return d
+        return asdict(self)
 
     def save_json(self, path: str):
         with open(path, "w") as f:
             json.dump(self.to_dict(), f, indent=2)
 
 
-# Status thresholds -- tune these for your crop/region.
-# "healthy": plenty of canopy cover, no action needed
-# "moderate": partial cover, could benefit from over-seeding / infill planting
-# "needs_attention": sparse cover, prioritize for replanting / irrigation check
-# "bare": essentially no vegetation, treat as highest priority
 STATUS_THRESHOLDS = (
     ("healthy", 0.70),
     ("moderate", 0.40),
@@ -65,104 +49,270 @@ STATUS_THRESHOLDS = (
 
 
 def classify_fraction(frac: float) -> str:
-    for name, cutoff in STATUS_THRESHOLDS:
-        if frac >= cutoff:
-            return name
+    """Classify a zone based on its vegetation fraction."""
+
+    for status, threshold in STATUS_THRESHOLDS:
+        if frac >= threshold:
+            return status
+
     return "bare"
 
 
 class FieldAnalyzer:
-    def __init__(self,
-                 exgr_threshold: float = 10.0,
-                 use_hsv_confirmation: bool = True,
-                 grid_rows: int = 8,
-                 grid_cols: int = 8):
+    def __init__(
+        self,
+        exgr_threshold: float = 10.0,
+        use_hsv_confirmation: bool = True,
+        grid_rows: int = 8,
+        grid_cols: int = 8,
+    ):
         self.exgr_threshold = exgr_threshold
         self.use_hsv_confirmation = use_hsv_confirmation
         self.grid_rows = grid_rows
         self.grid_cols = grid_cols
 
     def load_image(self, path: str) -> np.ndarray:
+        """Load an image from disk as an RGB NumPy array."""
+
         img = Image.open(path).convert("RGB")
+
         return np.array(img)
 
-    def analyze(self,
-                image_path: str,
-                field_area_hectares: float | None = None,
-                target_coverage_pct: float = 80.0) -> FieldReport:
+    def analyze(
+        self,
+        image_path: str,
+        field_area_hectares: float | None = None,
+        target_coverage_pct: float = 80.0,
+    ) -> FieldReport:
         """
-        Run full analysis.
+        Analyze an image loaded from a file path.
 
-        field_area_hectares: real-world area the image covers, if known.
-            Enables real_area_m2 per cell and total deficit-area estimates.
-        target_coverage_pct: the coverage % you're aiming for (e.g. 80%
-            canopy cover). Used to compute how much area still needs
-            greenery to reach that goal.
+        This is the backwards-compatible file-based entry point.
         """
+
         img = self.load_image(image_path)
-        h, w = img.shape[:2]
 
-        mask = green_mask(img,
-                           exgr_threshold=self.exgr_threshold,
-                           use_hsv_confirmation=self.use_hsv_confirmation)
+        return self.analyze_image(
+            img,
+            image_path=str(image_path),
+            field_area_hectares=field_area_hectares,
+            target_coverage_pct=target_coverage_pct,
+        )
+
+    def analyze_image(
+        self,
+        img: np.ndarray,
+        image_path: str = "",
+        field_area_hectares: float | None = None,
+        target_coverage_pct: float = 80.0,
+    ) -> FieldReport:
+        """
+        Analyze an image already loaded into memory.
+
+        This is the primary entry point for Streamlit and future APIs.
+        """
+
+        # ----------------------------------------------------
+        # Validate image
+        # ----------------------------------------------------
+
+        if not isinstance(img, np.ndarray):
+            raise TypeError("img must be a NumPy array.")
+
+        if img.ndim != 3 or img.shape[2] != 3:
+            raise ValueError(
+                "img must have shape (height, width, 3) for an RGB image."
+            )
+
+        height, width = img.shape[:2]
+
+        if height == 0 or width == 0:
+            raise ValueError("Image must not be empty.")
+
+        # ----------------------------------------------------
+        # Validate settings
+        # ----------------------------------------------------
+
+        if self.grid_rows <= 0 or self.grid_cols <= 0:
+            raise ValueError(
+                "grid_rows and grid_cols must be greater than 0."
+            )
+
+        if field_area_hectares is not None and field_area_hectares <= 0:
+            raise ValueError(
+                "field_area_hectares must be greater than 0."
+            )
+
+        if not 0 <= target_coverage_pct <= 100:
+            raise ValueError(
+                "target_coverage_pct must be between 0 and 100."
+            )
+
+        # ----------------------------------------------------
+        # Vegetation detection
+        # ----------------------------------------------------
+
+        mask = green_mask(
+            img,
+            exgr_threshold=self.exgr_threshold,
+            use_hsv_confirmation=self.use_hsv_confirmation,
+        )
 
         overall_green_pct = float(mask.mean() * 100)
 
+        # ----------------------------------------------------
+        # Real-world area calculation
+        # ----------------------------------------------------
+
         total_area_m2 = None
         m2_per_pixel = None
+
         if field_area_hectares is not None:
             total_area_m2 = field_area_hectares * 10_000
-            m2_per_pixel = total_area_m2 / (h * w)
 
-        # --- grid analysis ---
-        rows, cols = self.grid_rows, self.grid_cols
-        row_edges = np.linspace(0, h, rows + 1, dtype=int)
-        col_edges = np.linspace(0, w, cols + 1, dtype=int)
+            total_pixels = height * width
 
-        cells: list[CellResult] = []
-        status_breakdown = {"healthy": 0, "moderate": 0, "needs_attention": 0, "bare": 0}
+            m2_per_pixel = total_area_m2 / total_pixels
 
-        for r in range(rows):
-            for c in range(cols):
-                r0, r1 = row_edges[r], row_edges[r + 1]
-                c0, c1 = col_edges[c], col_edges[c + 1]
-                cell_mask = mask[r0:r1, c0:c1]
-                pixel_area = cell_mask.size
-                frac = float(cell_mask.mean()) if pixel_area > 0 else 0.0
-                status = classify_fraction(frac)
-                status_breakdown[status] += 1
+        # ----------------------------------------------------
+        # Grid analysis
+        # ----------------------------------------------------
 
-                real_area = (pixel_area * m2_per_pixel) if m2_per_pixel else None
+        rows = self.grid_rows
+        cols = self.grid_cols
 
-                cells.append(CellResult(
-                    row=r, col=c,
-                    green_fraction=round(frac, 4),
-                    status=status,
-                    pixel_area=pixel_area,
-                    real_area_m2=round(real_area, 2) if real_area else None,
-                ))
-
-        # --- deficit / recommendation math ---
-        vegetated_area_m2 = None
-        deficit_area_m2 = None
-        if total_area_m2 is not None:
-            vegetated_area_m2 = total_area_m2 * (overall_green_pct / 100)
-            target_area_m2 = total_area_m2 * (target_coverage_pct / 100)
-            deficit_area_m2 = max(0.0, target_area_m2 - vegetated_area_m2)
-
-        recommendation = self._build_recommendation(
-            overall_green_pct, target_coverage_pct,
-            deficit_area_m2, status_breakdown, rows * cols
+        row_edges = np.linspace(
+            0,
+            height,
+            rows + 1,
+            dtype=int,
         )
 
+        col_edges = np.linspace(
+            0,
+            width,
+            cols + 1,
+            dtype=int,
+        )
+
+        cells: list[CellResult] = []
+
+        status_breakdown = {
+            "healthy": 0,
+            "moderate": 0,
+            "needs_attention": 0,
+            "bare": 0,
+        }
+
+        for row in range(rows):
+
+            for col in range(cols):
+
+                r0 = row_edges[row]
+                r1 = row_edges[row + 1]
+
+                c0 = col_edges[col]
+                c1 = col_edges[col + 1]
+
+                cell_mask = mask[r0:r1, c0:c1]
+
+                pixel_area = cell_mask.size
+
+                if pixel_area > 0:
+                    fraction = float(cell_mask.mean())
+                else:
+                    fraction = 0.0
+
+                status = classify_fraction(fraction)
+
+                status_breakdown[status] += 1
+
+                real_area = None
+
+                if m2_per_pixel is not None:
+                    real_area = pixel_area * m2_per_pixel
+
+                cells.append(
+                    CellResult(
+                        row=row,
+                        col=col,
+                        green_fraction=round(
+                            fraction,
+                            4,
+                        ),
+                        status=status,
+                        pixel_area=pixel_area,
+                        real_area_m2=(
+                            round(real_area, 2)
+                            if real_area is not None
+                            else None
+                        ),
+                    )
+                )
+
+        # ----------------------------------------------------
+        # Vegetated area and coverage deficit
+        # ----------------------------------------------------
+
+        vegetated_area_m2 = None
+        deficit_area_m2 = None
+
+        if total_area_m2 is not None:
+
+            vegetated_area_m2 = (
+                total_area_m2
+                * (overall_green_pct / 100)
+            )
+
+            target_area_m2 = (
+                total_area_m2
+                * (target_coverage_pct / 100)
+            )
+
+            deficit_area_m2 = max(
+                0.0,
+                target_area_m2 - vegetated_area_m2,
+            )
+
+        # ----------------------------------------------------
+        # Recommendation
+        # ----------------------------------------------------
+
+        recommendation = self._build_recommendation(
+            overall_green_pct=overall_green_pct,
+            target_coverage_pct=target_coverage_pct,
+            deficit_area_m2=deficit_area_m2,
+            status_breakdown=status_breakdown,
+            total_cells=rows * cols,
+        )
+
+        # ----------------------------------------------------
+        # Final report
+        # ----------------------------------------------------
+
         return FieldReport(
-            image_path=str(image_path),
-            image_width=w,
-            image_height=h,
-            overall_green_pct=round(overall_green_pct, 2),
-            total_area_m2=round(total_area_m2, 2) if total_area_m2 else None,
-            vegetated_area_m2=round(vegetated_area_m2, 2) if vegetated_area_m2 else None,
-            deficit_area_m2=round(deficit_area_m2, 2) if deficit_area_m2 else None,
+            image_path=image_path,
+            image_width=width,
+            image_height=height,
+            overall_green_pct=round(
+                overall_green_pct,
+                2,
+            ),
+            total_area_m2=(
+                round(total_area_m2, 2)
+                if total_area_m2 is not None
+                else None
+            ),
+            vegetated_area_m2=(
+                round(vegetated_area_m2, 2)
+                if vegetated_area_m2 is not None
+                else None
+            ),
+            deficit_area_m2=(
+                round(deficit_area_m2, 2)
+                if deficit_area_m2 is not None
+                else None
+            ),
             grid_rows=rows,
             grid_cols=cols,
             status_breakdown=status_breakdown,
@@ -170,22 +320,55 @@ class FieldAnalyzer:
             recommendation=recommendation,
         )
 
-    @staticmethod
-    def _build_recommendation(overall_pct, target_pct, deficit_m2,
-                               status_breakdown, total_cells) -> str:
-        gap = target_pct - overall_pct
-        needing = status_breakdown["needs_attention"] + status_breakdown["bare"]
-        pct_zones_needing = 100 * needing / total_cells if total_cells else 0
+    def _build_recommendation(
+        self,
+        overall_green_pct: float,
+        target_coverage_pct: float,
+        deficit_area_m2: float | None,
+        status_breakdown: dict,
+        total_cells: int,
+    ) -> str:
+        """Generate a simple field-level recommendation."""
 
-        if gap <= 0:
-            return (f"Coverage ({overall_pct:.1f}%) already meets or exceeds the "
-                    f"{target_pct:.0f}% target. No large-scale intervention needed; "
-                    f"monitor periodically.")
+        if overall_green_pct >= target_coverage_pct:
 
-        msg = (f"Current coverage is {overall_pct:.1f}%, which is {gap:.1f} "
-               f"percentage points below the {target_pct:.0f}% target. "
-               f"{needing}/{total_cells} grid zones ({pct_zones_needing:.0f}%) are "
-               f"classified 'needs_attention' or 'bare' and should be prioritized.")
-        if deficit_m2 is not None:
-            msg += f" Estimated additional vegetated area needed: ~{deficit_m2:,.0f} m²."
-        return msg
+            return (
+                f"Coverage is {overall_green_pct:.1f}%, "
+                f"which meets or exceeds the target of "
+                f"{target_coverage_pct:.1f}%. "
+                "Continue monitoring the field periodically."
+            )
+
+        gap = target_coverage_pct - overall_green_pct
+
+        attention_zones = (
+            status_breakdown["needs_attention"]
+            + status_breakdown["bare"]
+        )
+
+        attention_pct = (
+            attention_zones / total_cells * 100
+            if total_cells > 0
+            else 0
+        )
+
+        message = (
+            f"Coverage is {overall_green_pct:.1f}%, "
+            f"which is {gap:.1f} percentage points below "
+            f"the target of {target_coverage_pct:.1f}%. "
+        )
+
+        message += (
+            f"{attention_zones} of {total_cells} zones "
+            f"({attention_pct:.1f}%) are classified as "
+            "needs_attention or bare."
+        )
+
+        if deficit_area_m2 is not None:
+            message += (
+                f" Approximately {deficit_area_m2:.1f} m² "
+                "of additional vegetated area would be required "
+                "to reach the target."
+            )
+
+        return message

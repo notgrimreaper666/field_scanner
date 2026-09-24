@@ -1,127 +1,368 @@
-# Field Green-Coverage Scanner
+# 🌱 FieldScanner
 
-Analyzes a photo of an agricultural field (drone, phone, or satellite RGB
-image) and reports:
+**FieldScanner** is an image-based agricultural field analysis application built with Python and Streamlit.
 
-1. **Overall green coverage %** — how much of the field is currently vegetated.
-2. **A grid-based coverage map** — which specific zones of the field are
-   healthy vs. sparse vs. bare, so you know *where* to focus.
-3. **How much area still needs greenery** — in m², if you tell it the
-   real-world size of the field, based on a target coverage % you set.
+It analyzes field images to estimate visible vegetation coverage, divide the image into zones, identify areas requiring attention, and generate visual and PDF reports.
 
-No special camera needed — it works on ordinary RGB photos. If you have
-4-band imagery (RGB + Near-Infrared) from a proper ag-drone, an NDVI
-function is included too, which is more accurate — see "Upgrading to NDVI" below.
+> **Note:** FieldScanner is an image-analysis tool. Its vegetation confidence and coverage measurements are estimates derived from RGB imagery and should not be treated as direct measurements of crop physiological health.
 
-## Quick start
+---
+
+## ✨ Features
+
+### 🔍 Field Analysis
+
+* Upload a field image directly through the Streamlit dashboard.
+* Analyze vegetation using RGB-based vegetation indices.
+* Estimate visible vegetation coverage.
+* Divide the field image into analysis zones.
+* Classify zones according to vegetation coverage.
+
+### 📊 Coverage Analytics
+
+FieldScanner provides:
+
+* Overall vegetation coverage percentage
+* Target coverage comparison
+* Zone distribution
+* High, moderate, low, and very-low coverage areas
+* Per-zone vegetation measurements
+
+### 🗺️ Visual Analysis
+
+The application generates several visualizations:
+
+* **Vegetation Mask Overlay** — highlights detected vegetation.
+* **Zone Coverage Heatmap** — displays vegetation coverage across field zones.
+* **Vegetation Confidence Map** — shows how strongly individual pixels match the RGB characteristics used by the vegetation model.
+
+### 📄 Reports & Export
+
+Analysis results can be exported as:
+
+* **JSON** — structured analysis data
+* **CSV** — detailed zone-by-zone data
+* **PDF** — professional field analysis report
+
+The PDF report can include:
+
+* Executive summary
+* Coverage statistics
+* Area analysis
+* Original field image
+* Vegetation overlay
+* Zone coverage map
+* Vegetation confidence map
+* Zone summary
+* Detailed zone analysis
+* Interpretation
+* Methodology
+* Limitations
+* Final status
+
+---
+
+## 🧠 How It Works
+
+FieldScanner uses RGB image processing to identify vegetation characteristics.
+
+A simplified analysis pipeline is:
+
+```text
+Field Image
+     │
+     ▼
+Image Preprocessing
+     │
+     ▼
+RGB Vegetation Analysis
+     │
+     ├── ExG
+     ├── ExR
+     └── ExGR
+     │
+     ▼
+Vegetation Detection
+     │
+     ▼
+Zone-Based Analysis
+     │
+     ├── Coverage %
+     ├── Zone Status
+     └── Area Estimation
+     │
+     ▼
+Visualizations
+     │
+     ├── Vegetation Overlay
+     ├── Coverage Heatmap
+     └── Confidence Map
+     │
+     ▼
+Reports & Export
+     ├── JSON
+     ├── CSV
+     └── PDF
+```
+
+---
+
+## 📁 Project Structure
+
+```text
+field_scanner/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+│
+└── field_scanner/
+    ├── analyzer.py
+    ├── vegetation_index.py
+    ├── visualize.py
+    └── report_generator.py
+```
+
+### `app.py`
+
+Main Streamlit application and user interface.
+
+### `analyzer.py`
+
+Contains the main field-analysis logic, including:
+
+* `FieldAnalyzer`
+* `FieldReport`
+* `CellResult`
+
+### `vegetation_index.py`
+
+Contains RGB vegetation-analysis functions, including:
+
+* ExG
+* ExR
+* ExGR
+* HSV-based confirmation
+* Continuous vegetation confidence
+* NDVI helper functionality
+
+### `visualize.py`
+
+Generates analysis visualizations:
+
+* Vegetation mask overlay
+* Grid heatmap
+* Vegetation confidence map
+
+### `report_generator.py`
+
+Creates professional PDF field-analysis reports using ReportLab.
+
+---
+
+## 🛠️ Technology Stack
+
+| Technology | Purpose                        |
+| ---------- | ------------------------------ |
+| Python     | Core programming language      |
+| Streamlit  | Interactive web dashboard      |
+| NumPy      | Numerical image processing     |
+| OpenCV     | Image-processing operations    |
+| Pillow     | Image loading and manipulation |
+| Matplotlib | Visualization generation       |
+| Pandas     | CSV/data handling              |
+| ReportLab  | PDF report generation          |
+
+---
+
+## ⚙️ Installation
+
+### 1. Clone the repository
+
+```bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+cd field_scanner
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+Activate it on Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+On Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
-
-# Try it instantly on a generated sample field (no photo needed):
-python demo.py
-
-# Run on your own photo:
-python cli.py path/to/field.jpg --area-hectares 2.5 --target 80
 ```
 
-Outputs land in `./output/` (or `./demo_output/` for the demo):
-- `report.json` — full machine-readable report (per-cell breakdown included)
-- `overlay.png` — original photo vs. detected-vegetation mask, side by side
-- `coverage_map.png` — grid heatmap: green=healthy, yellow=moderate, orange=needs attention, red=bare — with each cell's % labeled
+---
 
-## CLI options
+## ▶️ Running FieldScanner
 
-```
-python cli.py IMAGE [options]
+Start the Streamlit application:
 
---area-hectares FLOAT   Real-world area the photo covers (enables m² deficit numbers)
---target FLOAT          Target coverage % goal (default 80)
---grid-rows INT         Grid rows for zone analysis (default 8)
---grid-cols INT         Grid columns for zone analysis (default 8)
---exgr-threshold FLOAT  Detector sensitivity (default 10.0; lower = catches
-                         sparser/paler vegetation but more false positives)
--o, --outdir PATH       Output directory (default ./output)
+```bash
+python -m streamlit run app.py
 ```
 
-## How it works
+The application will normally be available at:
 
-Plants absorb red and blue light for photosynthesis but reflect green, so
-even in an ordinary photo, vegetation stands out from soil/rock/dead
-material on a color basis. The scanner uses:
-
-- **ExGR (Excess Green minus Excess Red)** — `(2G−R−B) − (1.4R−G)` per
-  pixel — the standard color-based vegetation index in agricultural
-  computer vision, robust to reddish/brown soil tones.
-- **HSV hue confirmation** — a pixel must also fall in the green hue band,
-  which filters out things like green plastic, algae-tinted water, or
-  painted equipment that could otherwise trip the color index.
-
-A pixel counts as "vegetation" only if both agree. The fraction of
-vegetation pixels = overall green coverage %.
-
-For the zone map, the image is split into a grid (default 8×8 = 64 cells)
-and each cell's green fraction is classified:
-
-| Status | Green fraction | Meaning |
-|---|---|---|
-| healthy | ≥ 70% | good canopy cover |
-| moderate | 40–70% | could benefit from over-seeding/infill |
-| needs_attention | 15–40% | sparse, prioritize for replanting/irrigation check |
-| bare | < 15% | essentially no vegetation, top priority |
-
-These thresholds are in `field_scanner/analyzer.py` (`STATUS_THRESHOLDS`) —
-tune them for your crop type and growth stage.
-
-## Deficit / "how much greenery is needed" math
-
-If you pass `--area-hectares`, the tool converts coverage % into real
-area:
-
-```
-vegetated_area = total_area * (overall_coverage_pct / 100)
-target_area    = total_area * (target_pct / 100)
-deficit_area   = target_area - vegetated_area   (0 if already met)
+```text
+http://localhost:8501
 ```
 
-This gives you a concrete "you need to vegetate ~X more m²" figure, plus
-the list of specific grid cells to prioritize (from `report.json`).
+---
 
-## Upgrading to NDVI (optional, more accurate)
+## 📷 Using the Application
 
-If your imagery includes a Near-Infrared band (common with dedicated ag
-drones like DJI P4 Multispectral, MicaSense sensors, or Sentinel-2/Planet
-satellite exports), use `field_scanner.vegetation_index.ndvi()` instead of
-the RGB-only detector — swap it into `FieldAnalyzer.analyze()` in place of
-`green_mask()`. NDVI directly measures chlorophyll reflectance and isn't
-fooled by things like green-painted surfaces or lighting variation the way
-RGB indices can be.
+### Step 1 — Upload
 
-## Project structure
+Upload a suitable RGB field image through the dashboard.
 
+### Step 2 — Configure
+
+Adjust the analysis settings, including vegetation-detection sensitivity and target coverage where applicable.
+
+### Step 3 — Analyze
+
+Run the field analysis.
+
+FieldScanner calculates vegetation coverage and produces zone-level results.
+
+### Step 4 — Inspect
+
+Review:
+
+* Overall coverage
+* Zone classifications
+* Coverage analytics
+* Vegetation overlay
+* Zone heatmap
+* Confidence map
+
+### Step 5 — Export
+
+Download the results in:
+
+```text
+JSON
+CSV
+PDF
 ```
-field_scanner/
-  field_scanner/
-    __init__.py
-    vegetation_index.py   # ExG / ExGR / HSV mask / NDVI
-    analyzer.py            # FieldAnalyzer, grid logic, deficit math
-    visualize.py            # overlay + heatmap image generation
-  cli.py                    # command-line entry point
-  demo.py                    # generates a synthetic field & runs the pipeline
-  requirements.txt
-  README.md
+
+---
+
+## 📐 Area Analysis
+
+When appropriate field dimensions or scale information are available, FieldScanner can associate detected pixel areas with estimated real-world areas.
+
+Zone results may include:
+
+* Pixel area
+* Vegetation coverage
+* Estimated real area in square metres
+
+Real-world area estimates depend on the accuracy of the supplied scale information.
+
+---
+
+## 🎯 Zone Classification
+
+Field zones are grouped into four categories:
+
+| Category          | Description                        |
+| ----------------- | ---------------------------------- |
+| High Coverage     | Strong visible vegetation coverage |
+| Moderate Coverage | Intermediate vegetation coverage   |
+| Low Coverage      | Lower vegetation coverage          |
+| Very Low Coverage | Very limited visible vegetation    |
+
+These classifications are image-derived and should be interpreted together with the original field image.
+
+---
+
+## ⚠️ Limitations
+
+FieldScanner currently works primarily with **RGB imagery**.
+
+Therefore:
+
+* Lighting conditions can affect vegetation detection.
+* Shadows can influence RGB measurements.
+* Soil and vegetation with similar colours may affect classification.
+* Camera characteristics can influence results.
+* Image quality and resolution affect analysis.
+* RGB vegetation confidence is not equivalent to plant-health probability.
+* The system does not directly measure physiological crop health.
+* Estimated real-world areas depend on reliable image scaling.
+
+For agricultural decision-making, FieldScanner should therefore be considered an **analysis and visualization aid**, rather than a replacement for field inspection or calibrated agricultural sensing.
+
+---
+
+## 🔮 Future Development
+
+Potential future improvements include:
+
+* Multispectral imagery support
+* NDVI-based analysis using appropriate sensor data
+* GPS/geospatial field mapping
+* Historical analysis and trend tracking
+* Before/after field comparison
+* More advanced crop segmentation
+* Automated anomaly detection
+* Expanded PDF analytics and charts
+* Field-level dashboards
+* Machine-learning-based vegetation classification
+
+---
+
+## 🚀 Deployment
+
+FieldScanner is designed to run as a Streamlit application and can be deployed through **Streamlit Community Cloud**.
+
+Deployment configuration:
+
+```text
+Branch: master
+Main file: app.py
 ```
 
-## Tuning tips
+Dependencies are provided in:
 
-- **False positives on bare soil** (soil looks slightly green in your
-  photos): raise `--exgr-threshold` (try 15–20).
-- **Missing pale/dry/stressed vegetation**: lower `--exgr-threshold`
-  (try 5–8), or widen the hue range in `hsv_green_mask()`.
-- **Shadows being misclassified**: shadowed vegetation often still passes
-  since hue is stable under shadow, but heavy shadow on bare soil can
-  occasionally read as darker — check `min_val` in `hsv_green_mask()` if
-  this happens a lot in your imagery.
-- Grid resolution (`--grid-rows/--grid-cols`) trades off precision vs.
-  actionability — 8×8 is a good default for a single field; go finer
-  (e.g. 20×20) for large fields where you want more localized guidance.
+```text
+requirements.txt
+```
+
+---
+
+## 📜 License
+
+Add your preferred license here.
+
+For example:
+
+```text
+MIT License
+```
+
+---
+
+## 👨‍💻 Project
+
+**FieldScanner**
+
+An image-based field vegetation analysis and reporting application built with Python and Streamlit.

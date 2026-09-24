@@ -94,3 +94,69 @@ def save_grid_heatmap(img_rgb: np.ndarray, report, out_path: str):
     plt.tight_layout()
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
+
+def save_confidence_map(
+    img_rgb: np.ndarray,
+    out_path,
+    exgr_threshold: float = 10.0,
+):
+    """
+    Create a vegetation-confidence visualization.
+
+    The confidence score represents how strongly each RGB pixel
+    matches the vegetation characteristics used by FieldScanner.
+
+    This is an image-derived confidence score, not a probability
+    and not a physiological crop-health measurement.
+    """
+
+    from .vegetation_index import vegetation_confidence
+
+    confidence = vegetation_confidence(
+        img_rgb,
+        exgr_threshold=exgr_threshold,
+    )
+
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(12, 6),
+    )
+
+    axes[0].imshow(img_rgb)
+    axes[0].set_title("Original Field Image")
+    axes[0].axis("off")
+
+    image = axes[1].imshow(
+        confidence,
+        cmap="RdYlGn",
+        vmin=0,
+        vmax=1,
+    )
+
+    axes[1].set_title(
+        "RGB Vegetation Confidence"
+    )
+
+    axes[1].axis("off")
+
+    colorbar = fig.colorbar(
+        image,
+        ax=axes[1],
+        fraction=0.046,
+        pad=0.04,
+    )
+
+    colorbar.set_label(
+        "Vegetation confidence"
+    )
+
+    plt.tight_layout()
+
+    plt.savefig(
+        out_path,
+        dpi=150,
+        bbox_inches="tight",
+    )
+
+    plt.close(fig)

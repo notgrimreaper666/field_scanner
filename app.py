@@ -1,3 +1,4 @@
+from pathlib import Path
 import io
 import json
 
@@ -286,6 +287,59 @@ with st.sidebar:
 
     st.divider()
 
+    # --------------------------------------------------------
+    # SAMPLE FIELD IMAGES
+    # --------------------------------------------------------
+
+    st.markdown("### 🌱 Try a Sample Field")
+
+    st.caption(
+        "No field image? Choose one of our built-in samples."
+    )
+
+    sample_dir = Path(__file__).parent / "sample_images"
+
+    sample_files = sorted(
+        sample_dir.glob("sample_image*.jpg")
+    )
+
+    sample_options = [
+        path.name
+        for path in sample_files
+    ]
+
+    selected_sample = None
+
+    if sample_options:
+
+        selected_sample = st.selectbox(
+            "Choose a sample",
+            ["None"] + sample_options,
+            format_func=lambda x: (
+                "— Select a sample —"
+                if x == "None"
+                else x.replace(
+                    "sample_image",
+                    "Sample Field "
+                ).replace(
+                    ".jpg",
+                    ""
+                )
+            ),
+        )
+
+    else:
+
+        st.warning(
+            "No sample images found."
+        )
+
+    st.divider()
+
+    # --------------------------------------------------------
+    # FIELD SETTINGS
+    # --------------------------------------------------------
+
     field_area = st.number_input(
         "Field area (hectares)",
         min_value=0.0,
@@ -324,7 +378,7 @@ with st.sidebar:
 
     analyze_button = st.button(
         "🔍 Analyze Field",
-        use_container_width=True,
+        width="stretch",
         type="primary",
     )
 
@@ -333,12 +387,15 @@ with st.sidebar:
         "from RGB imagery. It is not a crop-health diagnostic."
     )
 
-
 # ============================================================
 # EMPTY STATE
 # ============================================================
 
-if uploaded_file is None and st.session_state.report is None:
+if (
+    uploaded_file is None
+    and (selected_sample is None or selected_sample == "None")
+    and st.session_state.report is None
+):
 
     st.markdown(
         '<div class="section-header">Get started</div>',
@@ -424,93 +481,136 @@ if uploaded_file is not None:
 
 if analyze_button:
 
-    if st.session_state.image_array is None:
+    # --------------------------------------------------------
+    # Determine which image to analyze
+    # --------------------------------------------------------
 
-        st.error("Please upload an image first.")
+    if uploaded_file is not None:
+
+        image_to_analyze = st.session_state.image_array
+        image_name = st.session_state.image_name
+
+    elif selected_sample is not None and selected_sample != "None":
+
+        selected_path = sample_dir / selected_sample
+
+        try:
+
+            sample_image = Image.open(
+                selected_path
+            ).convert("RGB")
+
+            image_to_analyze = np.array(
+                sample_image
+            )
+
+            image_name = selected_sample
+
+            st.session_state.image_array = image_to_analyze
+            st.session_state.image_name = image_name
+
+        except Exception as e:
+
+            st.error(
+                f"Could not load sample image: {e}"
+            )
+
+            st.stop()
 
     else:
 
-        with st.spinner("Analyzing field..."):
+        st.error(
+            "Please upload an image or choose a sample field."
+        )
 
-            try:
+        st.stop()
 
-                analyzer = FieldAnalyzer(
-                    exgr_threshold=sensitivity,
-                    grid_rows=grid_size,
-                    grid_cols=grid_size,
-                )
+    # --------------------------------------------------------
+    # Run analysis
+    # --------------------------------------------------------
 
-                report = analyzer.analyze_image(
-                    st.session_state.image_array,
-                    image_path=st.session_state.image_name,
-                    field_area_hectares=(
-                        field_area
-                        if field_area > 0
-                        else None
-                    ),
-                    target_coverage_pct=float(
-                        target_coverage
-                    ),
-                )
+    with st.spinner("Analyzing field..."):
 
-                st.session_state.report = report
-                st.session_state.target_coverage = float(
+        try:
+
+            analyzer = FieldAnalyzer(
+                exgr_threshold=sensitivity,
+                grid_rows=grid_size,
+                grid_cols=grid_size,
+            )
+
+            report = analyzer.analyze_image(
+                image_to_analyze,
+                image_path=image_name,
+                field_area_hectares=(
+                    field_area
+                    if field_area > 0
+                    else None
+                ),
+                target_coverage_pct=float(
                     target_coverage
-                )
+                ),
+            )
 
-                # ------------------------------------------------
-                # Generate visual outputs
-                # ------------------------------------------------
+            st.session_state.report = report
 
-                overlay_buffer = io.BytesIO()
+            st.session_state.target_coverage = float(
+                target_coverage
+            )
 
-                save_mask_overlay(
-                    st.session_state.image_array,
-                    overlay_buffer,
-                    exgr_threshold=sensitivity,
-                )
+            # ------------------------------------------------
+            # Generate visual outputs
+            # ------------------------------------------------
 
-                overlay_buffer.seek(0)
+            overlay_buffer = io.BytesIO()
 
-                heatmap_buffer = io.BytesIO()
+            save_mask_overlay(
+                image_to_analyze,
+                overlay_buffer,
+                exgr_threshold=sensitivity,
+            )
 
-                save_grid_heatmap(
-                    st.session_state.image_array,
-                    report,
-                    heatmap_buffer,
-                )
+            overlay_buffer.seek(0)
 
-                heatmap_buffer.seek(0)
+            heatmap_buffer = io.BytesIO()
 
-                st.session_state.overlay_buffer = (
-                    overlay_buffer.getvalue()
-                )
+            save_grid_heatmap(
+                image_to_analyze,
+                report,
+                heatmap_buffer,
+            )
 
-                st.session_state.heatmap_buffer = (
-                    heatmap_buffer.getvalue()
-                )
+            heatmap_buffer.seek(0)
 
-                confidence_buffer = io.BytesIO()
+            st.session_state.overlay_buffer = (
+                overlay_buffer.getvalue()
+            )
 
-                save_confidence_map(
-    st.session_state.image_array,
-    confidence_buffer,
-    exgr_threshold=sensitivity,
-)
+            st.session_state.heatmap_buffer = (
+                heatmap_buffer.getvalue()
+            )
 
-                confidence_buffer.seek(0)
+            confidence_buffer = io.BytesIO()
 
-                st.session_state.confidence_buffer = (
-                    confidence_buffer.getvalue()
-                )
+            save_confidence_map(
+                image_to_analyze,
+                confidence_buffer,
+                exgr_threshold=sensitivity,
+            )
 
-            except Exception as e:
+            confidence_buffer.seek(0)
 
-                st.error(
-                    f"Analysis failed: {e}"
-                )
+            st.session_state.confidence_buffer = (
+                confidence_buffer.getvalue()
+            )
 
-                st.stop()
+        except Exception as e:
+
+            st.error(
+                f"Analysis failed: {e}"
+            )
+
+            st.stop()
 
 
 # ============================================================

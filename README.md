@@ -1,50 +1,96 @@
-# 🌱 FieldScanner
+# 🌱 Agridrone AI — FieldScanner
 
-**FieldScanner** is an image-based agricultural field analysis application built with Python and Streamlit.
+**FieldScanner** is an image-based agricultural field analysis application developed under **Agridrone AI**.
 
-It analyzes field images to estimate visible vegetation coverage, divide the image into zones, identify areas requiring attention, and generate visual and PDF reports.
+It uses RGB imagery to estimate visible vegetation coverage, divide a field image into analysis zones, identify lower-coverage areas, generate visualizations, and produce downloadable reports.
 
-> **Note:** FieldScanner is an image-analysis tool. Its vegetation confidence and coverage measurements are estimates derived from RGB imagery and should not be treated as direct measurements of crop physiological health.
+## 🚀 Live Demo
+
+The application is deployed using **Streamlit Community Cloud**.
+
+**Live App:** `YOUR_STREAMLIT_APP_URL`
 
 ---
 
 ## ✨ Features
 
-### 🔍 Field Analysis
+### 📷 Image Input
 
-* Upload a field image directly through the Streamlit dashboard.
-* Analyze vegetation using RGB-based vegetation indices.
-* Estimate visible vegetation coverage.
-* Divide the field image into analysis zones.
-* Classify zones according to vegetation coverage.
+FieldScanner supports:
+
+* User-uploaded field images
+* Built-in sample field images
+* JPG, JPEG, PNG, TIFF and TIF formats
+* RGB field, drone, aerial and satellite imagery
+
+Users can either upload their own image or select from the built-in sample fields for an immediate demonstration.
+
+### 🌱 Vegetation Analysis
+
+FieldScanner performs RGB-based vegetation detection using image-derived vegetation characteristics, including:
+
+* Excess Green (ExG)
+* Excess Red (ExR)
+* Excess Green minus Excess Red (ExGR)
+* HSV-based confirmation
+* Continuous vegetation confidence estimation
+
+The result is an estimate of **visible vegetation coverage from the image**.
+
+### 🗺️ Zone-Based Analysis
+
+The field image can be divided into configurable zones.
+
+For each zone, FieldScanner reports:
+
+* Vegetation coverage
+* Coverage classification
+* Pixel area
+* Estimated real-world area when field area information is provided
+
+Zones are classified as:
+
+| Classification       | Meaning                                  |
+| -------------------- | ---------------------------------------- |
+| 🟢 High Coverage     | Strong visible vegetation coverage       |
+| 🟡 Moderate Coverage | Intermediate visible vegetation coverage |
+| 🟠 Low Coverage      | Reduced visible vegetation coverage      |
+| 🔴 Very Low Coverage | Limited visible vegetation coverage      |
 
 ### 📊 Coverage Analytics
 
-FieldScanner provides:
+The dashboard provides:
 
-* Overall vegetation coverage percentage
-* Target coverage comparison
-* Zone distribution
-* High, moderate, low, and very-low coverage areas
-* Per-zone vegetation measurements
+* Overall visible vegetation coverage
+* Configured target coverage
+* Coverage gap
+* Number of low-coverage zones
+* Coverage-vs-target chart
+* Zone distribution chart
+* Area analysis when field area is available
 
-### 🗺️ Visual Analysis
+### 🎨 Visual Analysis
 
-The application generates several visualizations:
+FieldScanner generates:
 
-* **Vegetation Mask Overlay** — highlights detected vegetation.
-* **Zone Coverage Heatmap** — displays vegetation coverage across field zones.
-* **Vegetation Confidence Map** — shows how strongly individual pixels match the RGB characteristics used by the vegetation model.
+**Detected Vegetation Overlay**
+Highlights image regions classified as visible vegetation.
 
-### 📄 Reports & Export
+**Coverage Zone Map**
+Shows spatial variation in vegetation coverage across the field.
 
-Analysis results can be exported as:
+**Vegetation Confidence Map**
+Shows how strongly individual RGB pixels match the vegetation characteristics used by the image-based model.
 
-* **JSON** — structured analysis data
-* **CSV** — detailed zone-by-zone data
+### 📄 Export
+
+Analysis results can be downloaded as:
+
+* **JSON** — structured field analysis data
+* **CSV** — zone-by-zone analysis
 * **PDF** — professional field analysis report
 
-The PDF report can include:
+The PDF can contain:
 
 * Executive summary
 * Coverage statistics
@@ -62,47 +108,46 @@ The PDF report can include:
 
 ---
 
-## 🧠 How It Works
-
-FieldScanner uses RGB image processing to identify vegetation characteristics.
-
-A simplified analysis pipeline is:
+## 🧠 How FieldScanner Works
 
 ```text
-Field Image
-     │
-     ▼
-Image Preprocessing
-     │
-     ▼
-RGB Vegetation Analysis
-     │
-     ├── ExG
-     ├── ExR
-     └── ExGR
-     │
-     ▼
-Vegetation Detection
-     │
-     ▼
-Zone-Based Analysis
-     │
-     ├── Coverage %
-     ├── Zone Status
-     └── Area Estimation
-     │
-     ▼
-Visualizations
-     │
-     ├── Vegetation Overlay
-     ├── Coverage Heatmap
-     └── Confidence Map
-     │
-     ▼
-Reports & Export
-     ├── JSON
-     ├── CSV
-     └── PDF
+              Field Image
+                   │
+                   ▼
+          Image Preprocessing
+                   │
+                   ▼
+          RGB Vegetation Analysis
+                   │
+         ┌─────────┼─────────┐
+         ▼         ▼         ▼
+        ExG       ExR       ExGR
+         │         │         │
+         └─────────┼─────────┘
+                   ▼
+         Vegetation Detection
+                   │
+                   ▼
+            Zone Analysis
+                   │
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+   Coverage %   Status     Area Estimate
+        │          │          │
+        └──────────┼──────────┘
+                   ▼
+             Visual Output
+                   │
+      ┌────────────┼────────────┐
+      ▼            ▼            ▼
+   Overlay      Heatmap     Confidence
+      │            │            │
+      └────────────┼────────────┘
+                   ▼
+              Export Results
+         ┌─────────┼─────────┐
+         ▼         ▼         ▼
+        JSON      CSV        PDF
 ```
 
 ---
@@ -113,8 +158,19 @@ Reports & Export
 field_scanner/
 │
 ├── app.py
-├── requirements.txt
 ├── README.md
+├── requirements.txt
+│
+├── sample_images/
+│   ├── sample_image01.jpg
+│   ├── sample_image02.jpg
+│   ├── sample_image03.jpg
+│   ├── sample_image04.jpg
+│   ├── sample_image05.jpg
+│   ├── sample_image06.jpg
+│   ├── sample_image07.jpg
+│   ├── sample_image08.jpg
+│   └── sample_image09.jpg
 │
 └── field_scanner/
     ├── analyzer.py
@@ -125,84 +181,59 @@ field_scanner/
 
 ### `app.py`
 
-Main Streamlit application and user interface.
+Main Streamlit application and dashboard interface.
 
 ### `analyzer.py`
 
-Contains the main field-analysis logic, including:
-
-* `FieldAnalyzer`
-* `FieldReport`
-* `CellResult`
+Contains the core field-analysis engine and result data structures.
 
 ### `vegetation_index.py`
 
-Contains RGB vegetation-analysis functions, including:
-
-* ExG
-* ExR
-* ExGR
-* HSV-based confirmation
-* Continuous vegetation confidence
-* NDVI helper functionality
+Contains RGB vegetation-index calculations and vegetation-confidence logic.
 
 ### `visualize.py`
 
-Generates analysis visualizations:
+Generates:
 
-* Vegetation mask overlay
-* Grid heatmap
-* Vegetation confidence map
+* Vegetation mask overlays
+* Zone heatmaps
+* Vegetation confidence maps
 
 ### `report_generator.py`
 
-Creates professional PDF field-analysis reports using ReportLab.
+Generates professional PDF field-analysis reports.
+
+### `sample_images/`
+
+Contains built-in images that allow users to test FieldScanner without uploading their own field image.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Technology | Purpose                        |
-| ---------- | ------------------------------ |
-| Python     | Core programming language      |
-| Streamlit  | Interactive web dashboard      |
-| NumPy      | Numerical image processing     |
-| OpenCV     | Image-processing operations    |
-| Pillow     | Image loading and manipulation |
-| Matplotlib | Visualization generation       |
-| Pandas     | CSV/data handling              |
-| ReportLab  | PDF report generation          |
+| Technology | Purpose                      |
+| ---------- | ---------------------------- |
+| Python     | Core application             |
+| Streamlit  | Interactive web interface    |
+| NumPy      | Numerical processing         |
+| OpenCV     | Image processing             |
+| Pillow     | Image loading and processing |
+| Matplotlib | Visualization                |
+| Pandas     | Tabular data and CSV export  |
+| ReportLab  | PDF report generation        |
 
 ---
 
 ## ⚙️ Installation
 
-### 1. Clone the repository
+Clone the repository:
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/notgrimreaper666/field_scanner.git
 cd field_scanner
 ```
 
-### 2. Create a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-Activate it on Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-On Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
+Install the required packages:
 
 ```bash
 pip install -r requirements.txt
@@ -210,7 +241,7 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ Running FieldScanner
+## ▶️ Run Locally
 
 Start the Streamlit application:
 
@@ -218,7 +249,7 @@ Start the Streamlit application:
 python -m streamlit run app.py
 ```
 
-The application will normally be available at:
+The local application will normally be available at:
 
 ```text
 http://localhost:8501
@@ -226,36 +257,47 @@ http://localhost:8501
 
 ---
 
-## 📷 Using the Application
+## 📷 Using FieldScanner
 
-### Step 1 — Upload
+### 1. Upload or Select a Sample
 
-Upload a suitable RGB field image through the dashboard.
+Users can either upload a field image or choose one of the built-in sample fields.
 
-### Step 2 — Configure
+### 2. Configure Analysis
 
-Adjust the analysis settings, including vegetation-detection sensitivity and target coverage where applicable.
+Available settings include:
 
-### Step 3 — Analyze
+* Field area
+* Target vegetation coverage
+* Zone resolution
+* Vegetation detection sensitivity
 
-Run the field analysis.
+### 3. Analyze
 
-FieldScanner calculates vegetation coverage and produces zone-level results.
+Click:
 
-### Step 4 — Inspect
+```text
+🔍 Analyze Field
+```
 
-Review:
+FieldScanner processes the image and generates the field report.
 
-* Overall coverage
-* Zone classifications
-* Coverage analytics
-* Vegetation overlay
-* Zone heatmap
-* Confidence map
+### 4. Review
 
-### Step 5 — Export
+The dashboard provides:
 
-Download the results in:
+* Field overview
+* Coverage status
+* Coverage progress
+* Analytics
+* Visual analysis
+* Zone summary
+* Detailed zone analysis
+* Interpretation
+
+### 5. Export
+
+Download:
 
 ```text
 JSON
@@ -265,93 +307,124 @@ PDF
 
 ---
 
-## 📐 Area Analysis
+## 📐 Real-World Area Analysis
 
-When appropriate field dimensions or scale information are available, FieldScanner can associate detected pixel areas with estimated real-world areas.
+When field area is supplied, FieldScanner can convert image-derived pixel areas into estimated real-world areas.
 
-Zone results may include:
+This allows the report to include values such as:
 
-* Pixel area
-* Vegetation coverage
-* Estimated real area in square metres
+* Total field area
+* Visible vegetated area
+* Estimated coverage shortfall
+* Per-zone real area
 
-Real-world area estimates depend on the accuracy of the supplied scale information.
-
----
-
-## 🎯 Zone Classification
-
-Field zones are grouped into four categories:
-
-| Category          | Description                        |
-| ----------------- | ---------------------------------- |
-| High Coverage     | Strong visible vegetation coverage |
-| Moderate Coverage | Intermediate vegetation coverage   |
-| Low Coverage      | Lower vegetation coverage          |
-| Very Low Coverage | Very limited visible vegetation    |
-
-These classifications are image-derived and should be interpreted together with the original field image.
+Real-world area estimates depend on the accuracy of the supplied field-area information and image representation.
 
 ---
 
 ## ⚠️ Limitations
 
-FieldScanner currently works primarily with **RGB imagery**.
+FieldScanner is currently primarily an **RGB image-analysis system**.
 
-Therefore:
+Results can be affected by:
 
-* Lighting conditions can affect vegetation detection.
-* Shadows can influence RGB measurements.
-* Soil and vegetation with similar colours may affect classification.
-* Camera characteristics can influence results.
-* Image quality and resolution affect analysis.
-* RGB vegetation confidence is not equivalent to plant-health probability.
-* The system does not directly measure physiological crop health.
-* Estimated real-world areas depend on reliable image scaling.
+* Lighting conditions
+* Shadows
+* Camera characteristics
+* Image quality
+* Soil colour
+* Vegetation colour
+* Image resolution
+* Environmental conditions
 
-For agricultural decision-making, FieldScanner should therefore be considered an **analysis and visualization aid**, rather than a replacement for field inspection or calibrated agricultural sensing.
+The vegetation-confidence value is an **image-derived confidence score**, not a probability.
+
+FieldScanner does **not** directly measure:
+
+* Physiological crop health
+* Biomass
+* Nutrient status
+* Water stress
+* Yield
+* Disease severity
+
+The system should therefore be treated as an **analysis and visualization aid**, not as a replacement for calibrated agricultural sensors, field inspection, or professional agronomic assessment.
 
 ---
 
 ## 🔮 Future Development
 
-Potential future improvements include:
+Planned or potential future improvements include:
 
 * Multispectral imagery support
-* NDVI-based analysis using appropriate sensor data
-* GPS/geospatial field mapping
-* Historical analysis and trend tracking
-* Before/after field comparison
-* More advanced crop segmentation
+* Native NDVI analysis with suitable sensor data
+* GPS and geospatial field mapping
+* Historical field analysis
+* Before/after comparisons
 * Automated anomaly detection
-* Expanded PDF analytics and charts
-* Field-level dashboards
-* Machine-learning-based vegetation classification
+* Advanced vegetation segmentation
+* Machine-learning-based classification
+* Trend and time-series dashboards
+* Enhanced PDF analytics
+* Field-level mapping and reporting
+
+---
+
+## 🌾 Sample Images
+
+FieldScanner includes nine built-in sample images so users can explore the application without supplying their own image.
+
+These sample files are stored locally in:
+
+```text
+sample_images/
+```
+
+When distributing or publishing the repository, verify that the images are licensed for redistribution and add attribution or license information where required.
 
 ---
 
 ## 🚀 Deployment
 
-FieldScanner is designed to run as a Streamlit application and can be deployed through **Streamlit Community Cloud**.
+FieldScanner is designed for deployment on **Streamlit Community Cloud**.
 
-Deployment configuration:
+Current repository configuration:
 
 ```text
+Repository: notgrimreaper666/field_scanner
 Branch: master
 Main file: app.py
 ```
 
-Dependencies are provided in:
+Updates pushed to the connected GitHub repository can be reflected in the deployed application through Streamlit Community Cloud's repository-based deployment workflow.
 
-```text
-requirements.txt
+---
+
+## 🔄 Development Workflow
+
+The project can be developed through GitHub Codespaces or any local Python environment.
+
+Typical workflow:
+
+```bash
+git pull origin master
+
+# Make changes
+
+python -m py_compile app.py
+
+python -m streamlit run app.py
+
+git add .
+git commit -m "Describe your changes"
+git push origin master
 ```
 
 ---
 
 ## 📜 License
 
-Add your preferred license here.
+Add the project's chosen license here.
 
 For example:
 
@@ -363,6 +436,10 @@ MIT License
 
 ## 👨‍💻 Project
 
+### Agridrone AI
+
 **FieldScanner**
 
-An image-based field vegetation analysis and reporting application built with Python and Streamlit.
+Agricultural field vegetation intelligence from RGB imagery.
+
+Built with Python, Streamlit, OpenCV, NumPy, Pandas, Matplotlib and ReportLab.

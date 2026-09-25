@@ -89,13 +89,22 @@ st.markdown(
         margin-bottom: 25px;
     }
 
-    .hero-title {
-        font-size: 42px;
-        font-weight: 800;
-        color: #1b5e20;
-        letter-spacing: -1px;
-        margin-bottom: 4px;
-    }
+     .agridrone-title {
+    text-align: center;
+    font-size: 42px;
+    font-weight: 800;
+    color: #1b5e20;
+    letter-spacing: -1px;
+    margin-bottom: 2px;
+}
+
+.fieldscanner-title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 650;
+    color: #2e4733;
+    margin-bottom: 12px;
+}
 
     .hero-subtitle {
         font-size: 17px;
@@ -258,7 +267,8 @@ st.markdown(
 st.markdown(
     """
     <div class="hero">
-        <div class="hero-title">🌱 FieldScanner</div>
+        <div class="agridrone-title">Agridrone AI</div>
+        <div class="fieldscanner-title">🌱 FieldScanner</div>
         <div class="hero-subtitle">
             Agricultural field vegetation intelligence from RGB imagery
         </div>
